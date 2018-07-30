@@ -11,6 +11,7 @@
 #include "pow.h"
 #include "tinyformat.h"
 #include "uint256.h"
+#include "chainparams.h"
 
 #include <vector>
 
@@ -237,6 +238,16 @@ public:
         nBits          = block.nBits;
         nNonce         = block.nNonce;
     }
+    int GetAlgo() const { return ::GetAlgo(nVersion); }
+
+    bool CheckIndex(const Consensus::Params& consensus) const
+    {
+        int algo = GetAlgo();
+        if (algo == ALGO_SHA256D)
+            return CheckProofOfWork(GetBlockHash(), nBits,consensus);
+        else
+            return true;
+   }
 
     CDiskBlockPos GetBlockPos() const {
         CDiskBlockPos ret;
@@ -273,7 +284,84 @@ public:
     {
         return *phashBlock;
     }
+    CBigNum GetPrevWorkForAlgo(int algo) const
+    {
+        CBigNum nWork;
+        CBlockIndex* pindex = this->pprev;
+        while (pindex)
+        {
+            if (pindex->GetAlgo() == algo)
+            {
+                return pindex->GetBlockWork();
+            }
+            pindex = pindex->pprev;
+        }
+       
+       return Params().ProofOfWorkLimit(algo);
+    }
 
+    CBigNum GetBlockWork() const
+    {
+        CBigNum bnTarget;
+        bnTarget.SetCompact(nBits);
+        if (bnTarget <= 0)
+            return 0;
+        return (CBigNum(1)<<256) / (bnTarget+1);
+    }
+
+    int GetAlgoWorkFactor() const 
+    {
+        /*if (!TestNet() && (nHeight < multiAlgoDiffChangeTarget))
+        {
+            return 1;
+        }*/
+        if (TestNet() && (nHeight < 100))
+        {
+            return 1;
+        }
+        switch (GetAlgo())
+        {
+            // TODO: need to investigate this
+            // SHA256 + SCRYPT + NEOSCRYPT?? + ARGON2D?? + YESCRYPT
+            case ALGO_SHA256D:
+                return 1; 
+            // work factor = absolute work ratio * optimisation factor
+            case ALGO_SCRYPT:
+                return 1024 * 4;
+            case ALGO_NEOSCRYPT: 
+                return 64*8;
+            case ALGO_ARGON2D: 
+                return 4*6;
+            case ALGO_YESCRYPT:
+                return 128 * 8;
+            default:
+                return 1;
+        }
+    }
+
+    CBigNum GetBlockWorkAdjusted() const
+    {
+        CBigNum bnRes;
+        if ((TestNet() && (nHeight >= 1)) || (!TestNet() && nHeight >= V3_FORK)) 
+        {
+            // Adjusted Block Work is the Sum of work of this block and the most recent work of one block of each algo
+            CBigNum nBlockWork = GetBlockWork();
+            int nAlgo = GetAlgo();
+            for (int algo = 0; algo < NUM_ALGOS; algo++)
+            {
+                if (algo != nAlgo)
+                {
+                    nBlockWork += GetPrevWorkForAlgo(algo);
+                }
+            }
+            bnRes = nBlockWork / NUM_ALGOS;
+        }
+        else
+        {
+            bnRes = GetBlockWork() * GetAlgoWorkFactor();
+        }
+        return bnRes;
+    }
     int64_t GetBlockTime() const
     {
         return (int64_t)nTime;

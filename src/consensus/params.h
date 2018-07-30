@@ -9,6 +9,89 @@
 #include "uint256.h"
 #include <map>
 #include <string>
+#include "bignum.h"
+#include "util.h"
+
+   // TODO
+   // SHA256 + SCRYPT + NEOSCRYPT?? + ARGON2D?? + YESCRYPT
+enum {
+    ALGO_SHA256D = 0,
+    ALGO_SCRYPT  = 1,
+    ALGO_NEOSCRYPT = 2,
+    ALGO_ARGON2D = 3,
+    ALGO_YESCRYPT = 4,
+    NUM_ALGOS };
+
+enum
+{
+    // primary version
+
+    // algo
+    BLOCK_VERSION_ALGO           = (7 << 9),
+    BLOCK_VERSION_SHA256D        = (1 << 9),
+    BLOCK_VERSION_SCRYPT        = (2 << 9),
+    BLOCK_VERSION_NEOSCRYPT         = (3 << 9),
+    BLOCK_VERSION_ARGON2D               = (4 << 9),
+    BLOCK_VERSION_YESCRYPT         = (5 << 9)
+
+    
+};
+
+inline int GetAlgo(int nVersion)
+{
+    int algo = ALGO_SHA256D;
+
+int masked = nVersion & BLOCK_VERSION_ALGO;
+
+    switch (masked)
+    {
+        case BLOCK_VERSION_SHA256D:
+   //       LogPrintf("GetAlgo SHA256, nVersion %d  -  Masked %d \n", nVersion, masked);
+            algo = ALGO_SHA256D; 
+            break;
+        case BLOCK_VERSION_SCRYPT:
+    //      LogPrintf("GetAlgo SCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
+            algo = ALGO_SCRYPT; 
+            break;
+        case BLOCK_VERSION_NEOSCRYPT:
+    //      LogPrintf("GetAlgo NEOSCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
+            algo = ALGO_NEOSCRYPT; 
+            break;
+        case BLOCK_VERSION_ARGON2D:
+    //      LogPrintf("GetAlgo ARGON2D, nVersion %d  -  Masked %d \n", nVersion, masked);
+            algo = ALGO_ARGON2D; 
+            break;
+        case BLOCK_VERSION_YESCRYPT:
+    //      LogPrintf("GetAlgo YESCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
+            algo = ALGO_YESCRYPT; 
+            break;
+            default: 
+            
+            LogPrintf("GetAlgo Failed, nVersion %d  -  Masked %d \n", nVersion, masked); 
+            break;
+
+    }
+    return algo;
+}
+
+inline std::string GetAlgoName(int Algo)
+{
+    switch (Algo)
+    {
+        case ALGO_SHA256D:
+            return std::string("sha256d");
+        case ALGO_SCRYPT:
+            return std::string("scrypt");
+        case ALGO_NEOSCRYPT:
+            return std::string("neoscrypt");
+        case ALGO_ARGON2D:
+            return std::string("argon2d");
+        case ALGO_YESCRYPT:
+            return std::string("yescrypt");
+    }
+    return std::string("unknown");       
+}
+
 
 namespace Consensus {
 
@@ -75,6 +158,8 @@ struct Params {
     BIP9Deployment vDeployments[MAX_VERSION_BITS_DEPLOYMENTS];
     /** Proof of work parameters */
     uint256 powLimit;
+    //Array added for multialgo, original type CBigNum
+    CBigNum bnProofOfWorkLimit[NUM_ALGOS];
     bool fPowAllowMinDifficultyBlocks;
     bool fPowNoRetargeting;
     int64_t nPowTargetSpacing;

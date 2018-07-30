@@ -49,7 +49,7 @@ QString BitcoinUnits::name(int unit)
             case MNA: return QString("MNA");
             case mMNA: return QString("mMNA");
             case uMNA: return QString::fromUtf8("μMNA");
-            case duffs: return QString("duffs");
+            case duffs: return QString("moneita");
             default: return QString("???");
         }
     }
@@ -60,7 +60,7 @@ QString BitcoinUnits::name(int unit)
             case MNA: return QString("tMNA");
             case mMNA: return QString("mtMNA");
             case uMNA: return QString::fromUtf8("μtMNA");
-            case duffs: return QString("tduffs");
+            case duffs: return QString("moneita");
             default: return QString("???");
         }
     }
