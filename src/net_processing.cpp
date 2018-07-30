@@ -394,7 +394,15 @@ void FindNextBlocksToDownload(NodeId nodeid, unsigned int count, std::vector<CBl
     // Make sure pindexBestKnownBlock is up to date, we'll need it.
     ProcessBlockAvailability(nodeid);
 
-    if (state->pindexBestKnownBlock == NULL || state->pindexBestKnownBlock->nChainWork < chainActive.Tip()->nChainWork || state->pindexBestKnownBlock->nChainWork < UintToArith256(consensusParams.nMinimumChainWork)) {
+    if (state->pindexBestKnownBlock == NULL)
+        return;
+
+    if(state->pindexBestKnownBlock->nChainWork < chainActive.Tip()->nChainWork)
+        return;
+    
+    //TODO!!!!
+     if(state->pindexBestKnownBlock->nChainWork < UintToArith256(consensusParams.nMinimumChainWork)) 
+    {      
         // This peer has nothing interesting.
         return;
     }
@@ -1079,6 +1087,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
     const CChainParams& chainparams = Params();
     RandAddSeedPerfmon();
 
+    //LogPrintf("Network  message received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->id);  
     LogPrint("net", "received: %s (%u bytes) peer=%d\n", SanitizeString(strCommand), vRecv.size(), pfrom->id);
 
     if (mapArgs.count("-dropmessagestest") && GetRand(atoi(mapArgs["-dropmessagestest"])) == 0)

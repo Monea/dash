@@ -1030,6 +1030,21 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         }
 #endif
     }
+    // Algo
+    std::string strAlgo = GetArg("-algo", "sha256d");
+    transform(strAlgo.begin(),strAlgo.end(),strAlgo.begin(),::tolower);
+    if (strAlgo == "sha" || strAlgo == "sha256" || strAlgo == "sha256d")
+        miningAlgo = ALGO_SHA256D;
+    else if (strAlgo == "scrypt")
+        miningAlgo = ALGO_SCRYPT;
+    else if (strAlgo == "neoscrypt")
+        miningAlgo = ALGO_NEOSCRYPT;
+    else if (strAlgo == "argon2d" || strAlgo == "argon")
+        miningAlgo = ALGO_ARGON2D;
+    else if (strAlgo == "yescrypt")
+        miningAlgo = ALGO_YESCRYPT;
+    else
+        miningAlgo = ALGO_SHA256D;    
 
     // Make sure enough file descriptors are available
     int nBind = std::max((int)mapArgs.count("-bind") + (int)mapArgs.count("-whitebind"), 1);

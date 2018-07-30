@@ -101,7 +101,15 @@ UniValue getinfo(const UniValue& params, bool fHelp)
     if(g_connman)
         obj.push_back(Pair("connections",   (int)g_connman->GetNodeCount(CConnman::CONNECTIONS_ALL)));
     obj.push_back(Pair("proxy",         (proxy.IsValid() ? proxy.proxy.ToStringIPPort() : string())));
-    obj.push_back(Pair("difficulty",    (double)GetDifficulty()));
+    //obj.push_back(Pair("difficulty",    (double)GetDifficulty()));
+    obj.push_back(Pair("pow_algo_id",        miningAlgo));
+    obj.push_back(Pair("pow_algo",           GetAlgoName(miningAlgo)));
+    obj.push_back(Pair("difficulty",         (double)GetDifficulty(NULL, miningAlgo)));
+    obj.push_back(Pair("difficulty_sha256d", (double)GetDifficulty(NULL, ALGO_SHA256D)));
+    obj.push_back(Pair("difficulty_scrypt",  (double)GetDifficulty(NULL, ALGO_SCRYPT)));
+    obj.push_back(Pair("difficulty_neoscrypt",     (double)GetDifficulty(NULL, ALGO_NEOSCRYPT)));
+    obj.push_back(Pair("difficulty_argon2d",     (double)GetDifficulty(NULL, ALGO_ARGON2D)));
+    obj.push_back(Pair("difficulty_yescrypt",     (double)GetDifficulty(NULL, ALGO_YESCRYPT)));
     obj.push_back(Pair("testnet",       Params().TestnetToBeDeprecatedFieldRPC()));
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
