@@ -342,8 +342,6 @@ public:
     CBigNum GetBlockWorkAdjusted() const
     {
         CBigNum bnRes;
-        if ((TestNet() && (nHeight >= 1)) || (!TestNet() && nHeight >= V3_FORK)) 
-        {
             // Adjusted Block Work is the Sum of work of this block and the most recent work of one block of each algo
             CBigNum nBlockWork = GetBlockWork();
             int nAlgo = GetAlgo();
@@ -355,11 +353,10 @@ public:
                 }
             }
             bnRes = nBlockWork / NUM_ALGOS;
-        }
-        else
+        /*else
         {
             bnRes = GetBlockWork() * GetAlgoWorkFactor();
-        }
+        }*/
         return bnRes;
     }
     int64_t GetBlockTime() const

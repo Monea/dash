@@ -13,6 +13,10 @@
 
 #include <vector>
 
+/* */
+static const int MAX_BLOCK_ALGO_COUNT = 5;
+const int64_t multiAlgoDiffChangeTarget = 10;
+
 struct CDNSSeedData {
     std::string name, host;
     CDNSSeedData(const std::string &strName, const std::string &strHost) : name(strName), host(strHost) {}
@@ -56,6 +60,8 @@ public:
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
+
+    const CBigNum ProofOfWorkLimit(int algo) const { return consensus.bnProofOfWorkLimit[algo]; }   
 
     const CBlock& GenesisBlock() const { return genesis; }
     /** Make miner wait to have peers to avoid wasting work */
@@ -126,5 +132,13 @@ CChainParams& Params(const std::string& chain);
  * @throws std::runtime_error when the chain is not supported.
  */
 void SelectParams(const std::string& chain);
+
+inline bool TestNet() {
+    // Note: it's deliberate that this returns "false" for regression test mode.
+    return false;//Params().NetworkIDString() == CBaseChainParams::TESTNET;
+}
+inline bool RegTest() {
+    return Params().NetworkIDString() == CBaseChainParams::REGTEST;
+}
 
 #endif // BITCOIN_CHAINPARAMS_H
