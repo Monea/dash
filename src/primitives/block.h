@@ -9,7 +9,13 @@
 #include "primitives/transaction.h"
 #include "serialize.h"
 #include "uint256.h"
-
+#include "crypto/scrypt/scrypt.h"
+#include "crypto/hashargon2d.h"
+#include "crypto/yescrypt/yescrypt.h"
+#include "hash.h"
+#include "consensus/params.h"
+#define BEGIN(a)            ((char*)&(a))
+#define END(a)              ((char*)&((&(a))[1]))
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
  * requirements.  When they solve the proof-of-work, they broadcast the block
@@ -32,6 +38,27 @@ public:
     {
         SetNull();
     }
+
+
+int GetAlgo() const { return ::GetAlgo(nVersion); }
+inline int GetAlgo(int nVersion)//dgc CETTE FONCTION EST DOUBLé, c'est degeu ...
+{
+    switch (nVersion & BLOCK_VERSION_ALGO)
+    {
+        case BLOCK_VERSION_SHA256D:
+            return ALGO_SHA256D;
+        case BLOCK_VERSION_SCRYPT:
+            return ALGO_SCRYPT;
+        case BLOCK_VERSION_NEOSCRYPT:
+            return ALGO_NEOSCRYPT;
+        case BLOCK_VERSION_ARGON2D:
+            return ALGO_ARGON2D;
+        case BLOCK_VERSION_YESCRYPT:
+            return ALGO_YESCRYPT;
+    }
+    return ALGO_SHA256D;
+}
+
 
     ADD_SERIALIZE_METHODS;
 
@@ -62,6 +89,41 @@ public:
     }
 
     uint256 GetHash() const;
+
+    // Note: we use explicitly provided algo instead of the one returned by GetAlgo(), because this can be a block
+    // from foreign chain (parent block in merged mining) which does not encode algo in its nVersion field.
+    uint256 GetPoWHash(int algo) const
+    {
+       
+         // LogPrintf("GetPoWHash %d \n",algo);
+        switch (algo)
+        {
+            case ALGO_SHA256D:
+                return GetHash();
+            case ALGO_SCRYPT:
+            {
+                uint256 thash;
+                // Caution: scrypt_1024_1_1_256 assumes fixed length of 80 bytes
+                scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+                return thash;
+            }
+            case ALGO_NEOSCRYPT:
+                return GetHash(); // TODO: till need to implement these libraries, may change algo
+            case ALGO_ARGON2D:
+            {
+                return HashArgon2d(BEGIN(nVersion), END(nNonce));
+            }
+            case ALGO_YESCRYPT:
+                uint256 thash;
+
+                yescrypt_hash(BEGIN(nVersion), BEGIN(thash));
+                return thash;
+        }
+        return GetHash();
+    }
+
+
+
 
     int64_t GetBlockTime() const
     {
