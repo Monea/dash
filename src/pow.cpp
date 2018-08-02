@@ -171,7 +171,7 @@ unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockH
 
 
 // HOTFIX: This fix will just allow compilation of the program.
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo, const Consensus::Params& params)
 {
     // Most recent algo first
     if (pindexLast->nHeight + 1 >= params.nPowDGWHeight) {
@@ -182,6 +182,18 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     }
     else {
         return GetNextWorkRequiredBTC(pindexLast, pblock, params);
+    }
+}
+
+const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo)
+{
+    for (;;)
+    {
+        if (!pindex)
+            return NULL;
+        if (pindex->GetAlgo() == algo)
+            return pindex;
+        pindex = pindex->pprev;
     }
 }
 

@@ -102,22 +102,26 @@ inline int GetAlgo(int nVersion)
                 return GetHash();
             case ALGO_SCRYPT:
             {
-                uint256 thash;
+                /*uint256 thash;
                 // Caution: scrypt_1024_1_1_256 assumes fixed length of 80 bytes
                 scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
                 return thash;
+                */
+                return GetHash();
             }
             case ALGO_NEOSCRYPT:
                 return GetHash(); // TODO: till need to implement these libraries, may change algo
             case ALGO_ARGON2D:
             {
-                return HashArgon2d(BEGIN(nVersion), END(nNonce));
+                //return HashArgon2d(BEGIN(nVersion), END(nNonce));
+                return GetHash();
             }
             case ALGO_YESCRYPT:
-                uint256 thash;
+                /*uint256 thash;
 
                 yescrypt_hash(BEGIN(nVersion), BEGIN(thash));
-                return thash;
+                return thash;*/
+                return GetHash();
         }
         return GetHash();
     }
