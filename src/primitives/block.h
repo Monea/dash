@@ -41,7 +41,7 @@ public:
 
 
 int GetAlgo() const { return ::GetAlgo(nVersion); }
-inline int GetAlgo(int nVersion)//dgc CETTE FONCTION EST DOUBLé, c'est degeu ...
+inline int GetAlgo(int nVersion)
 {
     switch (nVersion & BLOCK_VERSION_ALGO)
     {

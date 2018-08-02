@@ -106,7 +106,10 @@ static void CheckBlockIndex(const Consensus::Params& consensusParams);
 /** Constant stuff for coinbase transactions we create: */
 CScript COINBASE_FLAGS;
 
-const string strMessageMagic = "DarkCoin Signed Message:\n";
+const string strMessageMagic = "Monea Signed Message:\n";
+
+// Settings
+int miningAlgo = ALGO_SHA256D;
 
 // Internal stuff
 namespace {
@@ -1187,7 +1190,8 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
-    if (!CheckProofOfWork(block.GetHash(), block.nBits, consensusParams))
+    //LogPrintf("ReadBlockFromDisk()"); //DEBUG
+    if (!CheckProofOfWork(block.GetPoWHash(block.GetAlgo()), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
     return true;
@@ -1870,7 +1874,7 @@ void ThreadScriptCheck() {
 // Protected by cs_main
 VersionBitsCache versionbitscache;
 
-int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params, bool fAssumeMasternodeIsUpgraded)
+int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Params& params, int algo, bool fAssumeMasternodeIsUpgraded)
 {
     LOCK(cs_main);
     int32_t nVersion = VERSIONBITS_TOP_BITS;
@@ -1899,6 +1903,30 @@ int32_t ComputeBlockVersion(const CBlockIndex* pindexPrev, const Consensus::Para
             nVersion |= VersionBitsMask(params, (Consensus::DeploymentPos)i);
         }
     }
+
+    // LogPrintf("Creating new block with algo : %d\n",algo);
+    switch (algo)
+    {
+        case ALGO_SHA256D:
+            nVersion |= BLOCK_VERSION_SHA256D;
+            break;
+        case ALGO_SCRYPT:
+            nVersion |=  BLOCK_VERSION_SCRYPT;
+            break;
+        case ALGO_NEOSCRYPT:
+            nVersion |= BLOCK_VERSION_NEOSCRYPT;
+            break;
+        case ALGO_ARGON2D:
+            nVersion |= BLOCK_VERSION_ARGON2D;
+            break;
+        case ALGO_YESCRYPT:
+            nVersion |= BLOCK_VERSION_YESCRYPT;
+            break;            
+        default:
+            error("CreateNewBlock: bad algo");
+            return 0;
+    }
+    nVersion |= 1; 
 
     return nVersion;
 }
@@ -1933,7 +1961,7 @@ public:
     {
         return ((pindex->nVersion & VERSIONBITS_TOP_MASK) == VERSIONBITS_TOP_BITS) &&
                ((pindex->nVersion >> bit) & 1) != 0 &&
-               ((ComputeBlockVersion(pindex->pprev, params, true) >> bit) & 1) == 0;
+               ((ComputeBlockVersion(pindex->pprev, params, pindex->GetAlgo(), true) >> bit) & 1) == 0;
     }
 };
 
@@ -3239,7 +3267,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     // Check proof of work
     if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 68589){
         // architecture issues with DGW v1 and v2)
-        unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, consensusParams);
+        unsigned int nBitsNext = GetNextWorkRequired(pindexPrev, &block, block.GetAlgo(),consensusParams);//hotfix
         double n1 = ConvertBitsToDouble(block.nBits);
         double n2 = ConvertBitsToDouble(nBitsNext);
 
@@ -3247,7 +3275,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
             return state.DoS(100, error("%s : incorrect proof of work (DGW pre-fork) - %f %f %f at %d", __func__, abs(n1-n2), n1, n2, nHeight),
                             REJECT_INVALID, "bad-diffbits");
     } else {
-        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, consensusParams))
+        if (block.nBits != GetNextWorkRequired(pindexPrev, &block, block.GetAlgo(), consensusParams)) //hotfix
             return state.DoS(100, error("%s : incorrect proof of work at %d", __func__, nHeight),
                             REJECT_INVALID, "bad-diffbits");
     }

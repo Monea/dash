@@ -308,10 +308,10 @@
 #define PACKAGE_BUGREPORT "https://github.com/dashpay/dash/issues"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "Dash Core"
+#define PACKAGE_NAME "Monea"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Dash Core 0.12.2"
+#define PACKAGE_STRING "Monea 0.9"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "dashcore"
@@ -320,7 +320,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.12.2"
+#define PACKAGE_VERSION "0.9"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */
