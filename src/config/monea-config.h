@@ -1,9 +1,9 @@
-/* src/config/dash-config.h.  Generated from dash-config.h.in by configure.  */
-/* src/config/dash-config.h.in.  Generated from configure.ac by autoheader.  */
+/* src/config/monea-config.h.  Generated from monea-config.h.in by configure.  */
+/* src/config/monea-config.h.in.  Generated from configure.ac by autoheader.  */
 
-#ifndef MONEA_CONFIG_H
+#ifndef DASH_CONFIG_H
 
-#define MONEA_CONFIG_H
+#define DASH_CONFIG_H
 
 /* Define if building universal (internal helper macro) */
 /* #undef AC_APPLE_UNIVERSAL_BUILD */
@@ -305,22 +305,22 @@
 #define LT_OBJDIR ".libs/"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT "https://github.com/dashpay/dash/issues"
+#define PACKAGE_BUGREPORT "https://github.com/monea/monea/issues"
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "Monea"
+#define PACKAGE_NAME "Monea Core"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "Monea 0.9"
+#define PACKAGE_STRING "Monea Core 0.12.2"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "dashcore"
+#define PACKAGE_TARNAME "moneacore"
 
 /* Define to the home page for this package. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.9"
+#define PACKAGE_VERSION "0.12.2"
 
 /* Define to necessary symbol if this constant uses a non-standard name on
    your system. */

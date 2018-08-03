@@ -3,13 +3,13 @@ Description=Dash's distributed currency daemon
 After=network.target
 
 [Service]
-User=dashcore
-Group=dashcore
+User=moneacore
+Group=moneacore
 
 Type=forking
-PIDFile=/var/lib/dashd/dashd.pid
-ExecStart=/usr/bin/dashd -daemon -pid=/var/lib/dashd/dashd.pid \
--conf=/etc/dashcore/dash.conf -datadir=/var/lib/dashd -disablewallet
+PIDFile=/var/lib/monead/monead.pid
+ExecStart=/usr/bin/monead -daemon -pid=/var/lib/monead/monead.pid \
+-conf=/etc/moneacore/monea.conf -datadir=/var/lib/monead -disablewallet
 
 Restart=always
 PrivateTmp=true

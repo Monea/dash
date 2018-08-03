@@ -1,36 +1,36 @@
 #!/bin/bash
 #
-#  dashd The Dash Core server.
+#  monead The Dash Core server.
 #
 #
 # chkconfig: 345 80 20
-# description: dashd
-# processname: dashd
+# description: monead
+# processname: monead
 #
 
 # Source function library.
 . /etc/init.d/functions
 
-# you can override defaults in /etc/sysconfig/dashd, see below
-if [ -f /etc/sysconfig/dashd ]; then
-        . /etc/sysconfig/dashd
+# you can override defaults in /etc/sysconfig/monead, see below
+if [ -f /etc/sysconfig/monead ]; then
+        . /etc/sysconfig/monead
 fi
 
 RETVAL=0
 
-prog=dashd
-# you can override the lockfile via BITCOIND_LOCKFILE in /etc/sysconfig/dashd
-lockfile=${BITCOIND_LOCKFILE-/var/lock/subsys/dashd}
+prog=monead
+# you can override the lockfile via BITCOIND_LOCKFILE in /etc/sysconfig/monead
+lockfile=${BITCOIND_LOCKFILE-/var/lock/subsys/monead}
 
-# dashd defaults to /usr/bin/dashd, override with BITCOIND_BIN
-dashd=${BITCOIND_BIN-/usr/bin/dashd}
+# monead defaults to /usr/bin/monead, override with BITCOIND_BIN
+monead=${BITCOIND_BIN-/usr/bin/monead}
 
-# dashd opts default to -disablewallet, override with BITCOIND_OPTS
-dashd_opts=${BITCOIND_OPTS--disablewallet}
+# monead opts default to -disablewallet, override with BITCOIND_OPTS
+monead_opts=${BITCOIND_OPTS--disablewallet}
 
 start() {
     echo -n $"Starting $prog: "
-    daemon $DAEMONOPTS $dashd $dashd_opts
+    daemon $DAEMONOPTS $monead $monead_opts
     RETVAL=$?
     echo
     [ $RETVAL -eq 0 ] && touch $lockfile

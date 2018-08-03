@@ -1,8 +1,8 @@
-/* src/config/dash-config.h.in.  Generated from configure.ac by autoheader.  */
+/* src/config/monea-config.h.in.  Generated from configure.ac by autoheader.  */
 
-#ifndef MONEA_CONFIG_H
+#ifndef DASH_CONFIG_H
 
-#define MONEA_CONFIG_H
+#define DASH_CONFIG_H
 
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
