@@ -315,7 +315,29 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha256.cpp \
   crypto/sha256.h \
   crypto/sha512.cpp \
-  crypto/sha512.h
+  crypto/sha512.h \
+  crypto/hashargon2d.h \
+  crypto/scrypt/scrypt.cpp \
+  crypto/scrypt/scrypt-sse2.cpp \
+  crypto/scrypt/scrypt.h \
+  crypto/yescrypt/sha256_Y.c \
+  crypto/yescrypt/sha256_Y.h \
+  crypto/yescrypt/sysendian.h \
+  crypto/yescrypt/yescrypt.h \
+  crypto/yescrypt/yescrypt-best.c \
+  crypto/yescrypt/yescryptcommon.c \
+  crypto/argon2/argon2.c \
+  crypto/argon2/argon2.h \
+  crypto/argon2/best.c \
+  crypto/argon2/blake2.h \
+  crypto/argon2/blake2b.c \
+  crypto/argon2/blake2-impl.h \
+  crypto/argon2/core.c \
+  crypto/argon2/core.h \
+  crypto/argon2/encoding.c \
+  crypto/argon2/encoding.h \
+  crypto/argon2/thread.c \
+  crypto/argon2/thread.h 
 
 # x11
 crypto_libbitcoin_crypto_a_SOURCES += \
