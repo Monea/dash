@@ -171,7 +171,7 @@ unsigned int GetNextWorkRequiredBTC(const CBlockIndex* pindexLast, const CBlockH
 
 
 // HOTFIX: This fix will just allow compilation of the program.
-unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo, const Consensus::Params& params)
+unsigned int GetNextWorkRequired_DASH(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo, const Consensus::Params& params)
 {
     // Most recent algo first
     if (pindexLast->nHeight + 1 >= params.nPowDGWHeight) {
@@ -185,6 +185,38 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     }
 }
 
+unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo, const Consensus::Params& params)
+{
+   /*int nHeight = pindexLast->nHeight;
+   if (TestNet())
+   {
+        return 0x1d13ffec;
+   }
+   else
+   {
+            //LogPrintf("DigiShield");
+            return GetNextWorkRequiredV1(pindexLast, pblock, algo);
+   }*/
+    return GetNextWorkRequiredV1(pindexLast, pblock, algo);
+}
+
+
+// TODO
+static const int64_t nTargetTimespan = 108 * 40; // DGC: 108 blocks (72 mins) [OLD WAS 6*60*3*20]
+static const int64_t nTargetSpacing = 1 * 120; // 120 seconds
+static const int64_t nInterval = nTargetTimespan / nTargetSpacing;
+//MultiAlgo Target updates
+static const int64_t multiAlgoTargetTimespan = 600; // 10 minutes (5 algos * 120 seconds)
+static const int64_t multiAlgoTargetSpacing = 600; // 10 minutes (5 algos * 120 seconds)
+static const int64_t multiAlgoInterval = 1; // retargets every blocks
+static const int64_t nAveragingInterval = 10; // 10 blocks
+static const int64_t nAveragingTargetTimespan = nAveragingInterval * multiAlgoTargetSpacing; // 20 minutes
+static const int64_t nMaxAdjustDown = 40; // 40% adjustment down
+static const int64_t nMaxAdjustUp = 20; // 20% adjustment up
+static const int64_t nTargetTimespanAdjDown = multiAlgoTargetTimespan * (100 + nMaxAdjustDown) / 100;
+static const int64_t nLocalDifficultyAdjustment = 40; // 40% down, 20% up
+static const int64_t nMinActualTimespan = nAveragingTargetTimespan * (100 - nMaxAdjustUp) / 100;
+static const int64_t nMaxActualTimespan = nAveragingTargetTimespan * (100 + nMaxAdjustDown) / 100;
 const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo)
 {
     for (;;)
@@ -195,6 +227,64 @@ const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo)
             return pindex;
         pindex = pindex->pprev;
     }
+}
+unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
+{
+    unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
+    LogPrintf("Proof Of Work Limit For Algo %i, is % i", algo, nProofOfWorkLimit);
+    // Genesis block
+    if (pindexLast == NULL)
+        return nProofOfWorkLimit;
+    // find first block in averaging interval
+    // Go back by what we want to be nAveragingInterval blocks per algo
+    const CBlockIndex* pindexFirst = pindexLast;
+    for (int i = 0; pindexFirst && i < NUM_ALGOS * nAveragingInterval; i++)
+    {
+        pindexFirst = pindexFirst->pprev;
+    }
+    const CBlockIndex* pindexPrevAlgo = GetLastBlockIndexForAlgo(pindexLast, algo);
+    if (pindexPrevAlgo == NULL || pindexFirst == NULL)
+        return nProofOfWorkLimit; // not enough blocks available
+    // Limit adjustment step
+    // Use medians to prevent time-warp attacks
+    int64_t nActualTimespan = pindexLast->GetMedianTimePast() - pindexFirst->GetMedianTimePast();
+    nActualTimespan = nAveragingTargetTimespan + (nActualTimespan - nAveragingTargetTimespan)/6;
+    LogPrintf("  nActualTimespan = %d before bounds\n", nActualTimespan);
+    if (nActualTimespan < nMinActualTimespan)
+        nActualTimespan = nMinActualTimespan;
+    if (nActualTimespan > nMaxActualTimespan)
+        nActualTimespan = nMaxActualTimespan;
+    // Global retarget
+    CBigNum bnNew;
+    bnNew.SetCompact(pindexPrevAlgo->nBits);
+    bnNew *= nActualTimespan;
+    bnNew /= nAveragingTargetTimespan;
+    // Per-algo retarget
+    int nAdjustments = pindexPrevAlgo->nHeight - pindexLast->nHeight + NUM_ALGOS - 1;
+    if (nAdjustments > 0)
+    {
+        for (int i = 0; i < nAdjustments; i++)
+        {
+            bnNew /= 100 + nLocalDifficultyAdjustment;
+            bnNew *= 100;
+        }
+    }
+    if (nAdjustments < 0)
+    {
+        for (int i = 0; i < -nAdjustments; i++)
+        {
+            bnNew *= 100 + nLocalDifficultyAdjustment;
+            bnNew /= 100;
+        }
+    }
+    if (bnNew > Params().ProofOfWorkLimit(algo))
+        bnNew = Params().ProofOfWorkLimit(algo);
+    /// debug print
+    LogPrintf("GetNextWorkRequired RETARGET\n");
+    LogPrintf("nTargetTimespan = %d    nActualTimespan = %d\n", nTargetTimespan, nActualTimespan);
+    LogPrintf("Before: %08x  %s\n", pindexLast->nBits, CBigNum().SetCompact(pindexLast->nBits).getuint256().ToString());
+    LogPrintf("After:  %08x  %s\n", bnNew.GetCompact(), bnNew.getuint256().ToString());
+    return bnNew.GetCompact();
 }
 
 // for DIFF_BTC only!
@@ -245,8 +335,13 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
         return error("CheckProofOfWork(): nBits below minimum work");
 
     // Check proof of work matches claimed amount
-    if (UintToArith256(hash) > bnTarget)
-        return error("CheckProofOfWork(): hash doesn't match nBits");
+    if ((UintToArith256(hash) > (bnTarget)))
+    {
+        LogPrintf("CheckProofOfWork(): hash doesn't match nBits \n hash %s \n bntarget %s \n nbit %d \n",(hash).ToString(),bnTarget.ToString(), nBits); 
+        return false;
+    }
+    //LogPrintf("CheckProofOfWork(): OK ! \n hash %s \n bntarget %s \n nbit %d \n",(hash).ToString(),bnTarget.ToString(), nBits);
+       
 
     return true;
 }

@@ -15,13 +15,14 @@ class CBlockIndex;
 class uint256;
 class arith_uint256;
 
-unsigned int GetNextWorkRequired_DASHVERSION(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&);
+unsigned int GetNextWorkRequired_DASH(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params&);
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock,int algo, const Consensus::Params&);
+
 
 unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nFirstBlockTime, const Consensus::Params&);
 
-/*unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo);
-unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo);*/
+unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo);
+/*unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo);*/
 
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */

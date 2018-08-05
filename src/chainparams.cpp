@@ -75,15 +75,15 @@ public:
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 210240; // Note: actual number of blocks per calendar year with DGW v3 is ~200700 (for example 449750 - 249050)
         consensus.nMasternodePaymentsStartBlock = 100000; // not true, but it's ok as long as it's less then nMasternodePaymentsIncreaseBlock
-        consensus.nMasternodePaymentsIncreaseBlock = 158000; // actual historical value
-        consensus.nMasternodePaymentsIncreasePeriod = 576*30; // 17280 - actual historical value
+        //consensus.nMasternodePaymentsIncreaseBlock = 158000; // actual historical value
+        //consensus.nMasternodePaymentsIncreasePeriod = 576*30; // 17280 - actual historical value
         consensus.nInstantSendKeepLock = 24;
-        consensus.nBudgetPaymentsStartBlock = 328008; // actual historical value
+        consensus.nBudgetPaymentsStartBlock = 100; //TODO: change later //actual historical value
         consensus.nBudgetPaymentsCycleBlocks = 16616; // ~(60*24*30)/2.6, actual number of blocks per month is 200700 / 12 = 16725
         consensus.nBudgetPaymentsWindowBlocks = 100;
         consensus.nBudgetProposalEstablishingTime = 60*60*24;
-        consensus.nSuperblockStartBlock = 614820; // The block at which 12.1 goes live (end of final 12.0 budget cycle)
-        consensus.nSuperblockCycle = 16616; // ~(60*24*30)/2.6, actual number of blocks per month is 200700 / 12 = 16725
+        consensus.nSuperblockStartBlock = 100; // TODO: change later //The block at which 12.1 goes live (end of final 12.0 budget cycle)
+        consensus.nSuperblockCycle = 43200; // 60*24*30 // ~(60*24*30)/2.6, actual number of blocks per month is 200700 / 12 = 16725
         consensus.nGovernanceMinQuorum = 10;
         consensus.nGovernanceFilterElements = 20000;
         consensus.nMasternodeMinimumConfirmations = 15;
@@ -99,7 +99,7 @@ public:
         consensus.bnProofOfWorkLimit[ALGO_ARGON2D]  = CBigNum(uint256S("0000100000000000000000000000000000000000000000000000000000000000"));
         consensus.bnProofOfWorkLimit[ALGO_YESCRYPT] = CBigNum(uint256S("0000100000000000000000000000000000000000000000000000000000000000"));
         consensus.nPowTargetTimespan = 24 * 60 * 60; // Monea: 1 day
-        consensus.nPowTargetSpacing = 2.5 * 60; // Monea: 2.5 minutes
+        consensus.nPowTargetSpacing = 3 * 60; // Monea: 3 minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nPowKGWHeight = 15200;
@@ -167,7 +167,7 @@ public:
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
-        fMiningRequiresPeers = true;
+        fMiningRequiresPeers = false;
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
@@ -197,7 +197,7 @@ public:
     CTestNetParams() {
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 210240;
-        consensus.nMasternodePaymentsStartBlock = 4010; // not true, but it's ok as long as it's less then nMasternodePaymentsIncreaseBlock
+        consensus.nMasternodePaymentsStartBlock = 100; // not true, but it's ok as long as it's less then nMasternodePaymentsIncreaseBlock
         consensus.nMasternodePaymentsIncreaseBlock = 4030;
         consensus.nMasternodePaymentsIncreasePeriod = 10;
         consensus.nInstantSendKeepLock = 6;
@@ -263,8 +263,6 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("moneadot.io",  "testnet-seed.moneadot.io"));
-        vSeeds.push_back(CDNSSeedData("masternode.io", "test.dnsseed.masternode.io"));
 
         // Testnet Monea addresses start with 'y'
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,140);
@@ -282,7 +280,7 @@ public:
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 
-        fMiningRequiresPeers = true;
+        fMiningRequiresPeers = false;
         fDefaultConsistencyChecks = false;
         fRequireStandard = false;
         fMineBlocksOnDemand = false;
