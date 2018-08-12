@@ -41,28 +41,28 @@ inline int GetAlgo(int nVersion)
 {
     int algo = ALGO_SHA256D;
 
-int masked = nVersion & BLOCK_VERSION_ALGO;
+int masked = nVersion & BLOCK_VERSION_ALGO; //and
 
     switch (masked)
     {
         case BLOCK_VERSION_SHA256D:
-   //       LogPrintf("GetAlgo SHA256, nVersion %d  -  Masked %d \n", nVersion, masked);
+          LogPrintf("GetAlgo SHA256, nVersion %d  -  Masked %d \n", nVersion, masked);
             algo = ALGO_SHA256D; 
             break;
         case BLOCK_VERSION_SCRYPT:
-    //      LogPrintf("GetAlgo SCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
+          LogPrintf("GetAlgo SCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
             algo = ALGO_SCRYPT; 
             break;
         case BLOCK_VERSION_NEOSCRYPT:
-    //      LogPrintf("GetAlgo NEOSCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
+          LogPrintf("GetAlgo NEOSCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
             algo = ALGO_NEOSCRYPT; 
             break;
         case BLOCK_VERSION_ARGON2D:
-    //      LogPrintf("GetAlgo ARGON2D, nVersion %d  -  Masked %d \n", nVersion, masked);
+          LogPrintf("GetAlgo ARGON2D, nVersion %d  -  Masked %d \n", nVersion, masked);
             algo = ALGO_ARGON2D; 
             break;
         case BLOCK_VERSION_YESCRYPT:
-    //      LogPrintf("GetAlgo YESCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
+          LogPrintf("GetAlgo YESCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
             algo = ALGO_YESCRYPT; 
             break;
             default: 

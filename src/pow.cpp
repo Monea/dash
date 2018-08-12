@@ -231,7 +231,7 @@ const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo)
 unsigned int GetNextWorkRequiredV1(const CBlockIndex* pindexLast, const CBlockHeader *pblock, int algo)
 {
     unsigned int nProofOfWorkLimit = Params().ProofOfWorkLimit(algo).GetCompact();
-    LogPrintf("Proof Of Work Limit For Algo %i, is % i", algo, nProofOfWorkLimit);
+    LogPrintf("Proof Of Work Limit For Algo %i, is % i \n", algo, nProofOfWorkLimit);
     // Genesis block
     if (pindexLast == NULL)
         return nProofOfWorkLimit;
