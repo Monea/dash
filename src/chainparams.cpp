@@ -18,6 +18,7 @@
 #include "chainparamsseeds.h"
 #include "uint256.h"
 #include "bignum.h"
+#include "arith_uint256.h"
 
 
 static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesisOutputScript, uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
@@ -54,7 +55,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  */
 static CBlock CreateGenesisBlock(uint32_t nTime, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "11/08 Test Genesis Block for Monea";
+    const char* pszTimestamp = "11/08 Una moneitaaa";
 
     const CScript genesisOutputScript = CScript() << ParseHex("04134bddda3177714c7c562dd12b86d57a5b4819cbf8d67211d163fa2ee66114f4a6dcecd955dbff45950fa54bc90ae59723c1f6ab10d9361dfbe63289a6e9de32") << OP_CHECKSIG;
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTime, nNonce, nBits, nVersion, genesisReward);
@@ -146,45 +147,45 @@ public:
         nDelayGetHeadersTime = 24 * 60 * 60;
         nPruneAfterHeight = 100000;
 
-        genesis = CreateGenesisBlock(1534002245, /*41833823*/28917698, 0x1e0ffff0, 1, 50 * COIN);
-        printf("genesis.nTime = %u \n", genesis.nTime);
-		printf("genesis.nNonce = %u \n", genesis.nNonce);
-		printf("genesis.nVersion = %u \n", genesis.nVersion);
-		printf("genesis.GetHash = %s\n", genesis.GetHash().ToString().c_str());
-		printf("genesis.hashMerkleRoot = %s \n", genesis.hashMerkleRoot.ToString().c_str());
-        /*if (true)
-                       {
-                           printf("Searching for genesis block...\n");
-                           uint256 hashTarget = CBigNum().SetCompact(genesis.nBits).getuint256();
-                           uint256 thash;
+        genesis = CreateGenesisBlock(1534032712, /*28917698*/ 29824803, 0x1e0ffff0, 1, 50 * COIN);
 
-                           while (true)
-                           {
-                               thash = genesis.GetHash();
-                               if (thash < hashTarget ||thash == hashTarget)
-                                   break;
-                               if ((genesis.nNonce & 0xFFF) == 0)
-                               {
-                                   printf("nonce %08X: hash = %s (target = %s)\n", genesis.nNonce, thash.ToString().c_str(), hashTarget.ToString().c_str());
-                               }
-                               ++genesis.nNonce;
-                               if (genesis.nNonce == 0)
-                               {
-                                   printf("NONCE WRAPPED, incrementing time\n");
-                                   ++genesis.nTime;
-                               }
-                           }
-                           printf("genesis.nTime = %u \n", genesis.nTime);
-                           printf("genesis.nNonce = %u \n", genesis.nNonce);
-                           printf("genesis.nVersion = %u \n", genesis.nVersion);
-                           printf("genesis.GetHash = %s\n", genesis.GetHash().ToString().c_str());
-                           printf("genesis.hashMerkleRoot = %s \n", genesis.hashMerkleRoot.ToString().c_str());
-
-                       }*/    
+        if(false)
+        {
+            printf("Searching for mainnet genesis block...\n");
+            bool fNegative;
+            bool fOverflow;
+            arith_uint256 bnTarget;
+            bnTarget.SetCompact(genesis.nBits, &fNegative, &fOverflow);
+            
+            uint256 thash = genesis.GetHash();
+            
+            while (UintToArith256(thash) > bnTarget)
+            {
+                thash = genesis.GetHash();
+                if (UintToArith256(thash) <= bnTarget)
+                    break;
+                if ((genesis.nNonce & 0xFFFFF) == 0)
+                {
+                    printf("nonce %08X: PoWhash = %s (target = %s)\n", genesis.nNonce, thash.ToString().c_str(), bnTarget.ToString().c_str());
+                }
+                ++genesis.nNonce;
+                if (genesis.nNonce == 0)
+                {
+                    printf("NONCE WRAPPED, incrementing time\n");
+                    ++genesis.nTime;
+                }
+            }
+            
+            printf("genesis.nTime = %u \n", genesis.nTime);
+            printf("genesis.nNonce = %u \n", genesis.nNonce);
+            printf("genesis.GetHash = %s\n", genesis.GetHash().ToString().c_str());
+            //printf("genesis.GetPoWHash = %s\n", genesis.GetPoWHash().ToString().c_str());
+            printf("genesis.hashMerkleRoot = %s\n", BlockMerkleRoot(genesis).ToString().c_str());
+        }
                      
         consensus.hashGenesisBlock = genesis.GetHash();
-        assert(consensus.hashGenesisBlock == uint256S("0x32f469a4849d7331d164809c44cac96509f2200e7d69d2479017fc461c6586b3"));
-        assert(genesis.hashMerkleRoot == uint256S("0xd204341a5c8fca9180230f6d19659bf93db483e3263d6e0258bbc31825892b11"));
+        assert(consensus.hashGenesisBlock == uint256S("0x00000a7b0e233619d9d60683927f7b61b4044da65da95b1f240eb6f7cde63b93"));
+        assert(genesis.hashMerkleRoot == uint256S("0xc863e8d4a2cfaa798dcbbf616c02f81bf8bc924ba5a50a1f16f55b4d4cfa21d7"));
 
 
         /*vSeeds.push_back(CDNSSeedData("monea.org", "dnsseed.monea.org"));*/
