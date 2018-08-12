@@ -31,8 +31,11 @@ Coin Parameters
 -------
 
 PoW: SHA256 + Scrypt + X + Argon2d + Yescrypt
+
 P2P port:
+
 RPC port:
+
 Masternodes port:
 
 
