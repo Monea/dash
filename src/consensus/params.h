@@ -28,11 +28,11 @@ enum
 
     // algo
     BLOCK_VERSION_ALGO           = (7 << 9),
-    BLOCK_VERSION_SHA256D        = (1 << 9),
-    BLOCK_VERSION_SCRYPT        = (2 << 9),
-    BLOCK_VERSION_NEOSCRYPT         = (3 << 9),
-    BLOCK_VERSION_ARGON2D               = (4 << 9),
-    BLOCK_VERSION_YESCRYPT         = (5 << 9)
+    BLOCK_VERSION_SHA256D        = 1,
+    BLOCK_VERSION_SCRYPT        = (1 << 9),
+    BLOCK_VERSION_NEOSCRYPT         = (2 << 9),
+    BLOCK_VERSION_ARGON2D               = (3 << 9),
+    BLOCK_VERSION_YESCRYPT         = (4 << 9)
 
     
 };
@@ -65,9 +65,12 @@ int masked = nVersion & BLOCK_VERSION_ALGO; //and
           LogPrintf("GetAlgo YESCRYPT, nVersion %d  -  Masked %d \n", nVersion, masked);
             algo = ALGO_YESCRYPT; 
             break;
-            default: 
-            
-            LogPrintf("GetAlgo Failed, nVersion %d  -  Masked %d \n", nVersion, masked); 
+            default:
+            if(nVersion == BLOCK_VERSION_SHA256D){
+                LogPrintf("GetAlgo Default SHA256d, nVersion %d  -  Masked %d \n", nVersion, masked); 
+            }else{  
+                LogPrintf("GetAlgo Failed, nVersion %d  -  Masked %d \n", nVersion, masked); 
+            } 
             break;
 
     }
