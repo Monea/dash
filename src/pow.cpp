@@ -202,7 +202,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
 
 // TODO
-static const int64_t nTargetTimespan = 108 * 40; // DGC: 108 blocks (72 mins) [OLD WAS 6*60*3*20]
+static const int64_t nTargetTimespan = 108 * 120; // DGC: 108 blocks (72 mins) [OLD WAS 6*60*3*20]
 static const int64_t nTargetSpacing = 1 * 120; // 120 seconds
 static const int64_t nInterval = nTargetTimespan / nTargetSpacing;
 //MultiAlgo Target updates
@@ -217,6 +217,35 @@ static const int64_t nTargetTimespanAdjDown = multiAlgoTargetTimespan * (100 + n
 static const int64_t nLocalDifficultyAdjustment = 40; // 40% down, 20% up
 static const int64_t nMinActualTimespan = nAveragingTargetTimespan * (100 - nMaxAdjustUp) / 100;
 static const int64_t nMaxActualTimespan = nAveragingTargetTimespan * (100 + nMaxAdjustDown) / 100;
+
+
+/*
+// original code
+
+
+static const int64_t nTargetTimespan = 108 * 40; // digitalcoin: 108 blocks (72 mins) [OLD WAS 6*60*3*20]
+static const int64_t nTargetSpacing = 1 * 40; // digitalcoin: 40 seconds
+static const int64_t nInterval = nTargetTimespan / nTargetSpacing;
+
+
+//MultiAlgo Target updates
+static const int64_t multiAlgoTargetTimespan = 120; // 2 minutes (NUM_ALGOS(3) * 40 seconds)
+static const int64_t multiAlgoTargetSpacing = 120; // 2 minutes (NUM_ALGOS * 30 seconds)
+static const int64_t multiAlgoInterval = 1; // retargets every blocks
+
+static const int64_t nAveragingInterval = 10; // 10 blocks
+static const int64_t nAveragingTargetTimespan = nAveragingInterval * multiAlgoTargetSpacing; // 20 minutes
+
+static const int64_t nMaxAdjustDown = 40; // 40% adjustment down
+static const int64_t nMaxAdjustUp = 20; // 20% adjustment up
+
+static const int64_t nTargetTimespanAdjDown = multiAlgoTargetTimespan * (100 + nMaxAdjustDown) / 100;
+static const int64_t nLocalDifficultyAdjustment = 40; // 40% down, 20% up
+
+static const int64_t nMinActualTimespan = nAveragingTargetTimespan * (100 - nMaxAdjustUp) / 100;
+static const int64_t nMaxActualTimespan = nAveragingTargetTimespan * (100 + nMaxAdjustDown) / 100;*/
+
+
 const CBlockIndex* GetLastBlockIndexForAlgo(const CBlockIndex* pindex, int algo)
 {
     for (;;)

@@ -14,7 +14,7 @@
 #include <vector>
 
 /* */
-static const int MAX_BLOCK_ALGO_COUNT = 5;
+static const int MAX_BLOCK_ALGO_COUNT = 3;
 const int64_t multiAlgoDiffChangeTarget = 10;
 
 struct CDNSSeedData {

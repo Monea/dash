@@ -1190,7 +1190,7 @@ bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos, const Consensus:
     }
 
     // Check the header
-    //LogPrintf("ReadBlockFromDisk()"); //DEBUG
+    //LogPrintf("ReadBlockFromDisk()"); // DEBUG
     if (!CheckProofOfWork(block.GetPoWHash(block.GetAlgo()), block.nBits, consensusParams))
         return error("ReadBlockFromDisk: Errors in block header at %s", pos.ToString());
 
@@ -1317,7 +1317,8 @@ void CheckForkWarningConditions()
     if (pindexBestForkTip && chainActive.Height() - pindexBestForkTip->nHeight >= 72)
         pindexBestForkTip = NULL;
 
-    if (pindexBestForkTip || (pindexBestInvalid && pindexBestInvalid->nChainWork > chainActive.Tip()->nChainWork + (GetBlockProof(*chainActive.Tip()) * 6)))
+    //if (pindexBestForkTip || (pindexBestInvalid && pindexBestInvalid->nChainWork > chainActive.Tip()->nChainWork + (GetBlockProof(*chainActive.Tip()) * 6)))
+    if (pindexBestForkTip || (pindexBestInvalid && pindexBestInvalid->nChainWork > chainActive.Tip()->nChainWork + UintToArith256((chainActive.Tip()->GetBlockWorkAdjusted() * 6).getuint256()) && (chainActive.Height() > pindexBestInvalid->nHeight + 3 || pindexBestInvalid->nHeight > chainActive.Height() + 3)))    
     {
         if (!fLargeWorkForkFound && pindexBestForkBase)
         {
@@ -1375,7 +1376,7 @@ void CheckForkWarningConditionsOnNewFork(CBlockIndex* pindexNewForkTip)
     // We define it this way because it allows us to only store the highest fork tip (+ base) which meets
     // the 7-block condition and from this always have the most-likely-to-cause-warning fork
     if (pfork && (!pindexBestForkTip || (pindexBestForkTip && pindexNewForkTip->nHeight > pindexBestForkTip->nHeight)) &&
-            pindexNewForkTip->nChainWork - pfork->nChainWork > (GetBlockProof(*pfork) * 7) &&
+            pindexNewForkTip->nChainWork - pfork->nChainWork > (UintToArith256(pfork->GetBlockWorkAdjusted().getuint256())* 20) &&
             chainActive.Height() - pindexNewForkTip->nHeight < 72)
     {
         pindexBestForkTip = pindexNewForkTip;
@@ -2356,7 +2357,7 @@ bool static FlushStateToDisk(CValidationState &state, FlushStateMode mode) {
     // The cache is large and we're within 10% and 10 MiB of the limit, but we have time now (not in the middle of a block processing).
     bool fCacheLarge = mode == FLUSH_STATE_PERIODIC && cacheSize > std::max((9 * nTotalSpace) / 10, nTotalSpace - MAX_BLOCK_COINSDB_USAGE * 1024 * 1024);
     // The cache is over the limit, we have to write now.
-    bool fCacheCritical = mode == FLUSH_STATE_IF_NEEDED && cacheSize > nCoinCacheUsage;
+    bool fCacheCritical = mode == FLUSH_STATE_IF_NEEDED && ((uint64_t)cacheSize) > nCoinCacheUsage;
     // It's been a while since we wrote the block index to disk. Do this frequently, so we don't need to redownload after a crash.
     bool fPeriodicWrite = mode == FLUSH_STATE_PERIODIC && nNow > nLastWrite + (int64_t)DATABASE_WRITE_INTERVAL * 1000000;
     // It's been very long since we flushed the cache. Do this infrequently, to optimize cache usage.
@@ -2430,6 +2431,9 @@ void PruneAndFlush() {
 }
 
 /** Update chainActive and related internal data structures. */
+
+// TODO
+
 void static UpdateTip(CBlockIndex *pindexNew) {
     const CChainParams& chainParams = Params();
     chainActive.SetTip(pindexNew);
@@ -2968,9 +2972,13 @@ CBlockIndex* AddToBlockIndex(const CBlockHeader& block)
     {
         pindexNew->pprev = (*miPrev).second;
         pindexNew->nHeight = pindexNew->pprev->nHeight + 1;
+
+       /* if((pindexNew->nHeight %10000)==0)    
+        LogPrintf("AcceptingBlock : %s \n",pindexNew->ToString());//DGCLOG*/
         pindexNew->BuildSkip();
     }
-    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew);
+    //pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + GetBlockProof(*pindexNew); // DASH
+    pindexNew->nChainWork = (pindexNew->pprev ? pindexNew->pprev->nChainWork : 0) + UintToArith256(pindexNew->GetBlockWorkAdjusted().getuint256()); 
     pindexNew->RaiseValidity(BLOCK_VALID_TREE);
     if (pindexBestHeader == NULL || pindexBestHeader->nChainWork < pindexNew->nChainWork)
         pindexBestHeader = pindexNew;
@@ -3116,8 +3124,12 @@ bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, unsigne
 
 bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, bool fCheckPOW)
 {
+
+    // DEBUG
+    // LogPrintf("CheckBlockHeader() %s \n",block.GetPoWHash(block.GetAlgo()).ToString());
+
     // Check proof of work matches claimed amount
-    if (fCheckPOW && !CheckProofOfWork(block.GetHash(), block.nBits, Params().GetConsensus()))
+    if (fCheckPOW && !CheckProofOfWork(block.GetPoWHash(block.GetAlgo()), block.nBits, Params().GetConsensus()))
         return state.DoS(50, error("CheckBlockHeader(): proof of work failed"),
                          REJECT_INVALID, "high-hash");
 
@@ -3244,8 +3256,9 @@ static bool CheckIndexAgainstCheckpoint(const CBlockIndex* pindexPrev, CValidati
 
 bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, CBlockIndex * const pindexPrev)
 {
-    const Consensus::Params& consensusParams = Params().GetConsensus();
-    int nHeight = pindexPrev->nHeight + 1;
+    //   return true; //DEBUG To remove
+    //  const Consensus::Params& consensusParams = Params().GetConsensus();
+ /*   int nHeight = pindexPrev->nHeight + 1;
     // Check proof of work
     if(Params().NetworkIDString() == CBaseChainParams::MAIN && nHeight <= 68589){
         // architecture issues with DGW v1 and v2)
@@ -3262,12 +3275,13 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
                             REJECT_INVALID, "bad-diffbits");
     }
 
+*/
     // Check timestamp against prev
     if (block.GetBlockTime() <= pindexPrev->GetMedianTimePast())
         return state.Invalid(error("%s: block's timestamp is too early", __func__),
                              REJECT_INVALID, "time-too-old");
 
-    // Reject block.nVersion=1 blocks when 95% (75% on testnet) of the network has upgraded:
+/*    // Reject block.nVersion=1 blocks when 95% (75% on testnet) of the network has upgraded:
     if (block.nVersion < 2 && IsSuperMajority(2, pindexPrev, consensusParams.nMajorityRejectBlockOutdated, consensusParams))
         return state.Invalid(error("%s: rejected nVersion=1 block", __func__),
                              REJECT_OBSOLETE, "bad-version");
@@ -3281,7 +3295,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     if (block.nVersion < 4 && IsSuperMajority(4, pindexPrev, consensusParams.nMajorityRejectBlockOutdated, consensusParams))
         return state.Invalid(error("%s : rejected nVersion=3 block", __func__),
                              REJECT_OBSOLETE, "bad-version");
-
+*/
     return true;
 }
 
@@ -3412,6 +3426,9 @@ bool ProcessNewBlockHeaders(const std::vector<CBlockHeader>& headers, CValidatio
 /** Store block on disk. If dbp is non-NULL, the file is known to already reside on disk */
 static bool AcceptBlock(const CBlock& block, CValidationState& state, const CChainParams& chainparams, CBlockIndex** ppindex, bool fRequested, const CDiskBlockPos* dbp, bool* fNewBlock)
 {
+
+    //DEBUG
+    // LogPrintf("AcceptBlock() ");
     if (fNewBlock) *fNewBlock = false;
     AssertLockHeld(cs_main);
 
@@ -3456,7 +3473,49 @@ static bool AcceptBlock(const CBlock& block, CValidationState& state, const CCha
         return false;
     }
 
+    // DEBUG
+    // Check for duplicate
+    uint256 hash = block.GetHash();
+/*    if (mapBlockIndex.count(hash))
+        return state.Invalid(error("AcceptBlock() : block already in mapBlockIndex"), 0, "duplicate");
+*/
+    // Get prev block index
+    CBlockIndex* pindexPrev = NULL;
+    int nHeightForVerif = 0;
+    if (hash != Params().GetConsensus().hashGenesisBlock) {
+    // Check Previous Block
+        auto mi = mapBlockIndex.find(block.hashPrevBlock);
+        if (mi == mapBlockIndex.end())
+            return state.DoS(10, error("AcceptBlock() : prev block not found"), 0, "bad-prevblk");
+        pindexPrev = (*mi).second;
+        nHeightForVerif = pindexPrev->nHeight+1;
+        // Check count of sequence of the same algorithm
+        //if (TestNet() || (nHeightForVerif > V3_FORK)){} 
+            int nAlgo = block.GetAlgo();
+            int nAlgoCount = 1;
+            CBlockIndex* piPrev = pindexPrev;
+            while (piPrev && (nAlgoCount <= MAX_BLOCK_ALGO_COUNT))
+            {
+                if (piPrev->GetAlgo() != nAlgo)
+                    break;
+                nAlgoCount++;
+                piPrev = piPrev->pprev;
+            }
+            if (nAlgoCount > MAX_BLOCK_ALGO_COUNT)
+            {
+                return state.DoS(100, error("AcceptBlock() : Too many blocks from the same algo"), REJECT_INVALID, "algo-toomany");
+            }
+        
+        LogPrintf("Checking Block %d with Algo %d \n", nHeightForVerif, block.GetAlgo());
+        if (block.GetAlgo() == ALGO_SHA256D)  { LogPrintf("Algo is SHA256 \n ");}
+        if (block.GetAlgo() == ALGO_SCRYPT) { LogPrintf("Algo is Scrypt \n");}
+        if (block.GetAlgo() == ALGO_NEOSCRYPT)     { LogPrintf("Algo is Neoscypt \n");}
+        if (block.GetAlgo() == ALGO_ARGON2D) { LogPrintf("Algo is Argon2d \n");}
+        if (block.GetAlgo() == ALGO_YESCRYPT)     { LogPrintf("Algo is Yescrypt \n");}
+    }
     int nHeight = pindex->nHeight;
+
+
 
     // Write block to history file
     try {
@@ -3739,7 +3798,8 @@ bool static LoadBlockIndexDB()
     BOOST_FOREACH(const PAIRTYPE(int, CBlockIndex*)& item, vSortedByHeight)
     {
         CBlockIndex* pindex = item.second;
-        pindex->nChainWork = (pindex->pprev ? pindex->pprev->nChainWork : 0) + GetBlockProof(*pindex);
+        //pindex->nChainWork = (pindex->pprev ? pindex->pprev->nChainWork : 0) + GetBlockProof(*pindex); // DASH
+        pindex->nChainWork = (pindex->pprev ? pindex->pprev->nChainWork : 0) +  UintToArith256(pindex->GetBlockWorkAdjusted().getuint256());
         // We can link the chain of blocks for which we've received transactions at some point.
         // Pruned nodes may have deleted the block.
         if (pindex->nTx > 0) {
