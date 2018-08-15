@@ -202,7 +202,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
 
 // TODO
-static const int64_t nTargetTimespan = 108 * 120; // DGC: 108 blocks (72 mins) [OLD WAS 6*60*3*20]
+static const int64_t nTargetTimespan = 108 * 40; // DGC: 108 blocks (72 mins) [OLD WAS 6*60*3*20]
 static const int64_t nTargetSpacing = 1 * 120; // 120 seconds
 static const int64_t nInterval = nTargetTimespan / nTargetSpacing;
 //MultiAlgo Target updates
@@ -369,7 +369,8 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&
         LogPrintf("CheckProofOfWork(): hash doesn't match nBits \n hash %s \n bntarget %s \n nbit %d \n",(hash).ToString(),bnTarget.ToString(), nBits); 
         return false;
     }
-    //LogPrintf("CheckProofOfWork(): OK ! \n hash %s \n bntarget %s \n nbit %d \n",(hash).ToString(),bnTarget.ToString(), nBits);
+    // DEBUG
+    LogPrintf("CheckProofOfWork(): OK ! \n hash %s \n bntarget %s \n nbit %d \n",(hash).ToString(),bnTarget.ToString(), nBits);
        
 
     return true;

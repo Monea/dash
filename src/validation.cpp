@@ -2435,20 +2435,22 @@ void PruneAndFlush() {
 // TODO
 
 void static UpdateTip(CBlockIndex *pindexNew) {
-    const CChainParams& chainParams = Params();
+    //const CChainParams& chainParams = Params();
     chainActive.SetTip(pindexNew);
 
     // New best block
     mempool.AddTransactionsUpdated(1);
-
-    LogPrintf("%s: new best=%s  height=%d  log2_work=%.8g  tx=%lu  date=%s progress=%f  cache=%.1fMiB(%utxo)\n", __func__,
+//DEBUG
+    /*LogPrintf("%s: new best=%s  height=%d  log2_work=%.8g  tx=%lu  date=%s progress=%f  cache=%.1fMiB(%utxo)\n", __func__,
       chainActive.Tip()->GetBlockHash().ToString(), chainActive.Height(), log(chainActive.Tip()->nChainWork.getdouble())/log(2.0), (unsigned long)chainActive.Tip()->nChainTx,
       DateTimeStrFormat("%Y-%m-%d %H:%M:%S", chainActive.Tip()->GetBlockTime()),
       Checkpoints::GuessVerificationProgress(chainParams.Checkpoints(), chainActive.Tip()), pcoinsTip->DynamicMemoryUsage() * (1.0 / (1<<20)), pcoinsTip->GetCacheSize());
-
+    */
     cvBlockChange.notify_all();
 
+    // This code is changed in dgc
     // Check the version of the last 100 blocks to see if we need to upgrade:
+    /*
     static bool fWarned = false;
     if (!IsInitialBlockDownload())
     {
@@ -2487,7 +2489,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
                 fWarned = true;
             }
         }
-    }
+    }*/
 }
 
 /** Disconnect chainActive's tip. You probably want to call mempool.removeForReorg and manually re-limit mempool size after this, with cs_main held. */
@@ -3126,7 +3128,7 @@ bool CheckBlockHeader(const CBlockHeader& block, CValidationState& state, bool f
 {
 
     // DEBUG
-    // LogPrintf("CheckBlockHeader() %s \n",block.GetPoWHash(block.GetAlgo()).ToString());
+     LogPrintf("CheckBlockHeader() %s \n",block.GetPoWHash(block.GetAlgo()).ToString());
 
     // Check proof of work matches claimed amount
     if (fCheckPOW && !CheckProofOfWork(block.GetPoWHash(block.GetAlgo()), block.nBits, Params().GetConsensus()))
@@ -3428,7 +3430,7 @@ static bool AcceptBlock(const CBlock& block, CValidationState& state, const CCha
 {
 
     //DEBUG
-    // LogPrintf("AcceptBlock() ");
+     LogPrintf("AcceptBlock() ");
     if (fNewBlock) *fNewBlock = false;
     AssertLockHeld(cs_main);
 

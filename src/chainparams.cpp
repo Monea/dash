@@ -103,7 +103,7 @@ public:
         consensus.bnProofOfWorkLimit[ALGO_ARGON2D]  = CBigNum(uint256S("0000100000000000000000000000000000000000000000000000000000000000"));
         consensus.bnProofOfWorkLimit[ALGO_YESCRYPT] = CBigNum(uint256S("0000100000000000000000000000000000000000000000000000000000000000"));
         consensus.nPowTargetTimespan = 24 * 60 * 60; // Monea: 1 day
-        consensus.nPowTargetSpacing = 3 * 60; // Monea: 3 minutes
+        consensus.nPowTargetSpacing = 40;/*3 * 60;*/ // Monea: 3 minutes
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
         consensus.nPowKGWHeight = 15200;
